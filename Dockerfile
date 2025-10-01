@@ -36,4 +36,4 @@ RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 EXPOSE 10000
 
 # Start Laravel development server
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=$PORT"]
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
