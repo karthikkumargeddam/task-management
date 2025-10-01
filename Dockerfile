@@ -1,5 +1,5 @@
-# Use PHP 8.2 FPM image
-FROM php:8.2-fpm
+# Use PHP 8.2 CLI image
+FROM php:8.2-cli
 
 # Set working directory
 WORKDIR /var/www
@@ -28,12 +28,12 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions
+# Set permissions for Laravel
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Expose port
-EXPOSE 9000
+# Expose the port (Render sets $PORT automatically)
+EXPOSE 10000
 
-# Start PHP-FPM server
-CMD ["php-fpm"]
+# Start Laravel development server
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=$PORT"]
