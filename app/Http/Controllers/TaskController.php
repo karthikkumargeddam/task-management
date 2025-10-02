@@ -58,9 +58,14 @@ class TaskController extends Controller
 
     public function toggle(Task $task)
     {
-        $task->update(['completed' => !$task->completed]);
-        return redirect()->route('tasks.index');
+    // Flip the completed status
+      $task->completed = !$task->completed;
+      $task->save();
+
+    // Redirect back to the previous page
+      return response()->json(['success' => true, 'completed' => $task->completed]);
     }
+
 
     public function reorder(Request $request)
     {

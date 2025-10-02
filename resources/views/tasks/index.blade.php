@@ -10,17 +10,17 @@
         <option value="completed" {{ $filter=='completed'?'selected':'' }}>Completed</option>
         <option value="incomplete" {{ $filter=='incomplete'?'selected':'' }}>Incomplete</option>
     </select>
+</form>
 
 <ul id="task-list" class="list-group">
 @foreach($tasks as $task)
     <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ $task->id }}">
         <div>
-            <form action="{{ route('tasks.toggle', $task->id) }}" method="POST" class="d-inline">
-                @csrf @method('PATCH')
-                <button class="btn btn-sm {{ $task->completed ? 'btn-success' : 'btn-outline-secondary' }}">
-                    {{ $task->completed ? '✔' : '✖' }}
-                </button>
-            </form>
+            <button 
+                class="btn btn-sm toggle-btn {{ $task->completed ? 'btn-success' : 'btn-outline-secondary' }}" 
+                data-id="{{ $task->id }}">
+                {{ $task->completed ? 'Completed' : 'Mark Complete' }}
+            </button>
             <strong>{{ $task->title }}</strong> - {{ $task->description }}
         </div>
         <div>
@@ -37,20 +37,57 @@
 
 @section('scripts')
 <script>
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    new Sortable(document.getElementById('task-list'), {
-        animation: 150,
-        onEnd: function(evt) {
-            const order = Array.from(document.querySelectorAll('#task-list li')).map(li => li.dataset.id);
-            fetch('{{ route('tasks.reorder') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: JSON.stringify({ order })
-            });
-        }
-    });
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+// Use event delegation so new tasks work too
+document.getElementById('task-list').addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('toggle-btn')) {
+        const btn = e.target;
+        const taskId = btn.dataset.id;
+
+        // Generate the toggle URL using Laravel's base URL
+        const toggleUrl = '{{ url("tasks") }}/' + taskId + '/toggle';
+
+        fetch(toggleUrl, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.completed) {
+                   btn.classList.remove('btn-outline-secondary');
+                   btn.classList.add('btn-success');
+                   btn.textContent = 'Completed';
+                } else {
+                   btn.classList.remove('btn-success');
+                   btn.classList.add('btn-outline-secondary');
+                   btn.textContent = 'Mark Complete';
+                }
+             }  
+        })
+        // .catch(err => alert('Error: ' + err));
+    }
+});
+
+// Sortable (optional)
+new Sortable(document.getElementById('task-list'), {
+    animation: 150,
+    onEnd: function(evt) {
+        const order = Array.from(document.querySelectorAll('#task-list li')).map(li => li.dataset.id);
+        fetch('{{ route('tasks.reorder') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({ order })
+        });
+    }
+});
 </script>
 @endsection
