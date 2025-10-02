@@ -58,6 +58,7 @@ document.getElementById('task-list').addEventListener('click', function(e) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
+            body: JSON.stringify({ _method: 'PATCH'}),
         })
         .then(response => response.json())
         .then(data => {
