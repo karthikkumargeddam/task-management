@@ -39,6 +39,9 @@
 <script>
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+function toggleUrl(id){
+    return '{{ url("tasks") }}/' + id + '/toggle';
+}
 // Use event delegation so new tasks work too
 document.getElementById('task-list').addEventListener('click', function(e) {
     if (e.target && e.target.classList.contains('toggle-btn')) {
